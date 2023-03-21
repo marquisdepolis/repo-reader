@@ -38,6 +38,12 @@ os.chdir(directory)
 warnings.filterwarnings("ignore")
 
 
+def clone_github_repo(repo_url):
+    temp_dir = tempfile.mkdtemp()
+    Repo.clone_from(repo_url, temp_dir)
+    return temp_dir
+
+
 def find_python_files(path):
     python_files = []
     for root, _, files in os.walk(path):
@@ -129,6 +135,8 @@ def generate_textual_summary(analysis):
 
 
 def main():
+    # repo_url = input("Input url") # Replace with the GitHub repository URL
+    # local_repo_path = clone_github_repo(repo_url)
     analysis = analyze_directory(directory)
     # pprint.pprint(analysis)
     visualize_connections(analysis)
@@ -138,6 +146,17 @@ def main():
     chatbot = Chatbot()
     response = chatbot.smart_prompt(prompt)
     print(response)
+
+    # Loop to handle follow-up questions
+    while True:
+        user_question = input(
+            "\nEnter your follow-up question or type 'exit' to quit: ").strip()
+        if user_question.lower() == 'exit':
+            break
+
+        # Call GPT chatbot with the follow-up question
+        response = chatbot.smart_prompt(user_question)
+        print(response)
 
 
 if __name__ == "__main__":
