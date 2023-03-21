@@ -156,7 +156,7 @@ def main():
 
         # Call GPT chatbot with the follow-up question
         response = chatbot.smart_prompt(user_question)
-        print(response)
+#        print(response)
 
 
 if __name__ == "__main__":
