@@ -1,4 +1,5 @@
 # %%
+# Need to edit so each function call saves both the query and the output in a csv file, along with what function was called
 import openai
 import os
 from datetime import datetime
@@ -15,10 +16,10 @@ def open_file(filepath):
         return infile.read()
 
 
-directory = filedialog.askdirectory()
-os.chdir(directory)
-os.environ["OPENAI_API_KEY"] = open_file('openai_api_key.txt')
-openai.api_key = open_file('openai_api_key.txt')
+# directory = filedialog.askdirectory()
+# os.chdir(directory)
+os.environ["OPENAI_API_KEY"] = open_file('Keys/openai_api_key.txt')
+openai.api_key = open_file('Keys/openai_api_key.txt')
 openai_api_key = openai.api_key
 # ignore all warnings
 warnings.filterwarnings("ignore")
@@ -40,7 +41,7 @@ I am not an AGI doomer but do believe we will need to undergo deep adaptation as
 # SCHOLAR_GPT_INSTRUCTION =
 
 
-class Chatbot:
+class Ask:
     def __init__(self):
         self.messages = []
         self.messages.append({"role": "system", "content": SYSTEM_INSTRUCTION})
@@ -78,14 +79,6 @@ class Chatbot:
         self.add_user_message(prompt)
         function_choice = self.execute().strip().lower()
         return function_choice
-
-    def smart_prompt(self, prompt):
-        response = self.gpt_smart(prompt)
-        return response
-
-    def creative_prompt(self, prompt):
-        response = self.gpt_creative(prompt)
-        return response
 
     def gpt_creative(self, prompt):
         leonardo_gpt_messages = self.messages.copy()
@@ -133,6 +126,30 @@ class Chatbot:
 
         print(f'User: {prompt}')
         print(f'SmartGPT: {model_response}')
+        return model_response
+
+    def gpt_simple(self, prompt):
+        simple_gpt_messages = self.messages.copy()
+
+        simple_gpt_messages.append({
+            "role": "system",
+            "content": "You are a very smart and helpful executive assistant."
+        })
+
+        user_input = prompt
+        simple_gpt_messages.append({"role": "user", "content": user_input})
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=simple_gpt_messages
+        )
+
+        model_response = response.choices[0].message.content
+        self.messages.append({"role": "user", "content": user_input})
+        self.messages.append({"role": "assistant", "content": model_response})
+
+        print(f'User: {prompt}')
+        print(f'GPT: {model_response}')
         return model_response
 
 #    def handle_message(self, user_message):

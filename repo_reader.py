@@ -3,6 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import os
 import ast
+import git
 import pprint
 from collections import defaultdict
 import tkinter as tk
@@ -12,7 +13,7 @@ import warnings
 import ast
 import openai
 import callgpt
-from callgpt import Chatbot
+from callgpt import Ask
 
 logger = logging.getLogger(__name__)
 
@@ -33,14 +34,12 @@ def open_file(filepath):
         return infile.read()
 
 
-directory = filedialog.askdirectory()
-os.chdir(directory)
 warnings.filterwarnings("ignore")
 
 
 def clone_github_repo(repo_url):
     temp_dir = tempfile.mkdtemp()
-    Repo.clone_from(repo_url, temp_dir)
+    git.Repo.clone_from(repo_url, temp_dir)
     return temp_dir
 
 
@@ -134,29 +133,32 @@ def generate_textual_summary(analysis):
     return "\n".join(summary)
 
 
-def main():
-    # repo_url = input("Input url") # Replace with the GitHub repository URL
-    # local_repo_path = clone_github_repo(repo_url)
+def main(question):
+    userinput = input(
+        "Do you want to read a repo, or analyse a directory? 1 or 2? ")
+    if userinput == '1':
+        repo_url = input("Input url")
+        directory = clone_github_repo(repo_url)
+    else:
+        directory = filedialog.askdirectory()
     analysis = analyze_directory(directory)
-    # pprint.pprint(analysis)
     visualize_connections(analysis)
     summary = generate_textual_summary(analysis)
-    prompt = "You are an exceptional programmer, like Linus Torvalds. You can understand entire codebases and the interrelationships. Please generate a perfectly detailed summary of the code, its structure and possible uses given the following filenames and functions:\n" + \
+    prompt = "You are an exceptional programmer, like Linus Torvalds. You are trying to answer {question}. You can understand entire codebases and the interrelationships. Please generate a perfectly detailed summary of the code, its structure and possible uses given the following filenames and functions:\n" + \
         str(summary)+"\n\n:"
-    chatbot = Chatbot()
-    response = chatbot.smart_prompt(prompt)
+    chatbot = Ask()
+    response = chatbot.gpt_smart(prompt)
     print(response)
 
     # Loop to handle follow-up questions
     while True:
         user_question = input(
-            "\nEnter your follow-up question or type 'exit' to quit: ").strip()
+            "\nEnter your follow-up question or type 'exit' to¬p quit: ").strip()
         if user_question.lower() == 'exit':
             break
 
         # Call GPT chatbot with the follow-up question
-        response = chatbot.smart_prompt(user_question)
-#        print(response)
+        response = chatbot.gpt_smart(user_question)
 
 
 if __name__ == "__main__":
